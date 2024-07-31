@@ -1,3 +1,4 @@
+version: 1.0.0
 desc: Panner with sound delay simulation
 author: Joaquín Aldunate
 about:
