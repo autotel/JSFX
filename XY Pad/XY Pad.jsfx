@@ -1,0 +1,144 @@
+version: 1.0.0
+desc: x/y pad utility to control stuff
+author: Joaquín Aldunate
+about:
+  # x/y Pad
+  Simple sliders that can be moved by clicking and dragging on an x/y pad
+  It also outputs an audio signal accordingly, if you find a way to control things
+  at audio rate (low pass filter is recommended in this case)
+changelog:
+  - Configured project as reapack repository
+
+slider1:0<-1,1>x
+slider2:0<-1,1>y
+slider3:0<0,1.5>center dist
+out_pin:left
+out_pin:right
+out_pin:distance
+
+@init 
+frozen = false;
+old_mouse_cap = 0;
+function clamp(in)(
+  (in > 1)?( 
+    in = 1; 
+  ):(
+    (in < 0)?(
+      in = 0;
+    );
+  );
+  in
+);
+function screenCoordX(world) (
+  (world + 1) * gfx_w / 2;
+);
+function screenCoordY(world) (
+  (world + 1) * gfx_h / 2;
+);
+function worldX(screen) (
+  clamp(screen / gfx_w) * 2 - 1;
+);
+function worldY(screen) (
+  clamp(screen / gfx_h) * 2 - 1;
+);
+function distance(x1,y1,x2,y2) (
+  c1 = x1 - x2;
+  c2 = y1 - y2;
+  sqrt(c1*c1 + c2*c2);
+);
+@gfx
+gfx_setfont(1,"consolas",18);
+gfx_set(1,1,1,1);
+
+
+function toggleButton(x,y, label) (
+  gfx_setfont(1,"consolas",18);
+  gfx_set(1,1,1,1);
+  gfx_x = x + 8;
+  gfx_y = y;
+  w=1;
+  h=1;
+  gfx_measurestr(label,w,h);
+  w = w+16;
+  this.mouseIsInside = (
+    mouse_x > x && mouse_x - w < x &&
+    mouse_y > y && mouse_y - h < y
+  );
+  (!this.current_value)?(
+    gfx_set(0.6,0.6,0.6,this.mouseIsInside);
+  ):(
+    gfx_set(0.6,0,0,1);
+  );
+  gfx_rect(x,y,w,h);
+  gfx_set(1,1,1,1);
+  gfx_rect(x,y,w,h,false);
+  gfx_drawstr(label);
+  
+  this.mouseIsInside && mouse_cap == 1 && old_mouse_cap == 0 ? (
+    this.current_value= !this.current_value;
+  );
+  old_mouse_cap = mouse_cap;
+  this.current_value;
+);
+
+function toggleCircle(x,y,r) (
+  this.mouseIsInside = distance(mouse_x, mouse_y, x, y) < r;
+  (!this.current_value)?(
+    gfx_set(0.6,0.6,this.mouseIsInside,1);
+  ):(
+    gfx_set(0.6,0,0,1);
+  );
+  this.mouseIsInside?(
+    this.current_value?(
+      gfx_setcursor(429);  
+    ):(
+      gfx_setcursor(430);
+    );
+  ):(
+    gfx_setcursor(0);
+  );
+  gfx_circle(x,y,r,this.mouseIsInside); 
+
+  
+  this.mouseIsInside && mouse_cap == 1 && old_mouse_cap == 0 ? (
+    this.current_value= !this.current_value;
+  );
+  old_mouse_cap = mouse_cap;
+  this.current_value;
+);
+
+(!frozen) ? (  
+  gfx_set(1,1,1,0.2);
+  cx = screenCoordX(0);
+  cy = screenCoordY(0);
+  gfx_line(0, cy, gfx_w, cy);
+  gfx_line(cx, 0, cx, gfx_h);
+  val_x = worldX(mouse_x);
+  val_y = worldY(mouse_y);
+  val_d = distance(0,0,val_x, val_y);
+  circle_x = screenCoordX(val_x);
+  circle_y = screenCoordY(val_y);
+  slider1 = val_x;
+  slider2 = val_y;
+  slider3 = val_d;
+);
+
+frozen = toggleCircle(circle_x,circle_y, 10);
+
+@slider
+
+(frozen) ? (  
+  val_x = slider1;
+  val_y = slider2;
+  val_d = slider3;
+  circle_x = screenCoordX(val_x);
+  circle_y = screenCoordY(val_y);
+  val_d = distance(0,0,val_x, val_y);
+  slider3 = val_d;
+);
+
+@sample
+
+spl0 = val_x;
+spl1 = val_y;
+spl2 = val_d;

@@ -1,0 +1,61 @@
+version: 1.0.0
+desc: Set MIDI channel to all MIDI 
+author: Joaquín Aldunate
+about: 
+    # Channelizer
+    Set MIDI channel to all MIDI messages
+    Useful for routing MIDI messages to a specific channel
+    It doesnt' modify midi events which are not channel specific
+changelog:
+    - Configured project as reapack repository
+
+slider1:0<0,15,1{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16>Channel
+slider2:0<0,15,1{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16>(read) In channel
+
+in_pin:none
+out_pin:none
+
+@init
+
+NOTE_ON = 0x8;
+NOTE_OFF = 0x9;
+KEY_PRESSURE = 0xA;
+CONTROL_CHANGE = 0xB;
+PROGRAM_CHANGE = 0xC;
+CHANNEL_PRESSURE = 0xD;
+PITCH_BEND = 0xE;
+
+
+@slider
+
+bit_channel = slider1;
+chan_nibble = (bit_channel + 0xF0) & 0x0F;
+
+@block
+
+function is_channel_specific (msg1) 
+    local(r) 
+(
+    msg1_type = msg1 >> 4;
+    r = 0;
+    (msg1_type == NOTE_ON)? ( r = 1 );
+    (msg1_type == NOTE_OFF)? ( r = 1 );
+    (msg1_type == KEY_PRESSURE)? ( r = 1 );
+    (msg1_type == CONTROL_CHANGE)? ( r = 1 );
+    (msg1_type == PROGRAM_CHANGE)? ( r = 1 );
+    (msg1_type == CHANNEL_PRESSURE)? ( r = 1 );
+    (msg1_type == PITCH_BEND)? ( r = 1 );
+    is_chh = r;
+    r;
+);
+  
+last_channel = 0;
+while (
+    midirecv(ts, msg1, msg23) ? (
+        is_channel_specific(msg1) ? (
+          slider2 = msg1 & 0xF;
+          msg1 =  (msg1 & 0xF0) | chan_nibble;
+        );
+        midisend(ts, msg1, msg23); 
+    );
+);

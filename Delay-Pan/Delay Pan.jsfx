@@ -1,0 +1,53 @@
+desc: Panner with sound delay simulation
+author: Joaquín Aldunate
+about:
+    # Delay Pan
+    Panner which also simulates the time delay associated to movement of a sound source in space
+    No doppler effect when moving parameters, bc my knowledge of jsfx is rudimentary
+changelog:
+    - Configured project as reapack repository
+slider1:0<-1,1>Pan
+slider2:34.3<10,60>Speed of sound (cm per millisecond)
+slider3:0<0,200>Speaker distance (cm)
+
+in_pin:left
+in_pin:right
+out_pin:left
+out_pin:right
+
+@gfx
+gfx_setfont(1,"consolas",18);
+
+gfx_x = gfx_y = 20; //x, y position
+gfx_r = gfx_g = gfx_b = 1; gfx_a = 1; //RGB plus alpha
+
+gfx_drawstr("Delay left: "); gfx_drawnumber(delayLeft, 5); gfx_drawstr("ms. ");
+gfx_x = 20; gfx_y = gfx_y + gfx_texth;
+
+gfx_drawstr("Delay right: "); gfx_drawnumber(delayRight, 5); gfx_drawstr("ms. ");
+
+@slider
+mappedPan = (slider1 + 1) / 2;
+volLeft = 1 - mappedPan;
+volRight = mappedPan;
+
+travelTime = slider3 / slider2;
+delayLeft = travelTime * volLeft;
+delayRight = travelTime * volRight;
+
+buffLenLeft = floor(delayLeft / 1000 * srate) ;
+buffLenRight = floor(delayRight / 1000 * srate) + buffLenLeft+1;
+
+ext_tail_size = max(buffLenLeft, bufrR)+1;
+
+@sample
+buffPosLeft[0] = spl0 ;
+buffPosLeft = buffPosLeft + 1 ;
+buffPosLeft >= buffLenLeft ? buffPosLeft = 0;
+
+buffPosRight[0] = spl1 ;
+buffPosRight = buffPosRight + 1 ;
+buffPosRight >= buffLenRight ? buffPosRight = buffLenLeft+1;
+
+spl0 = buffPosLeft[0] * volLeft ; 
+spl1 = buffPosRight[0] * volRight;

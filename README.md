@@ -1,23 +1,24 @@
-# ReaPack Repository Template
+# Autotel Basic JSFX utils
 
-A template for GitHub-hosted ReaPack repositories with automated
-[reapack-index](https://github.com/cfillion/reapack-index)
-running from GitHub Actions.
+JSFX utilities I've created for myself, when I've seen the need.
 
-Replace the name of the repository in [index.xml](/index.xml) when using this template.
-This will be the name shown in ReaPack.
+## Channelizer 
 
-```xml
-<index version="1" name="Name of your repository here">
-```
+Set the channel to all incoming midi, only if the signal is channel-specific. 
 
-Replace the contents of this file ([README.md](/README.md)).
-This will be the text shown when using ReaPack's "About this repository" feature.
+## Delay-pan
 
-reapack-index looks for package files in subfolders.
-The folder tree represents the package categories shown in ReaPack.
+Pan the audio signal, also delaying it slightly as to simulate the time sound takes to travel a distance. Speed of sound and stereo distance can be adjusted. It's not enough as HRTF, but the effect is still satisfying. For HRTF there are several really good plugins such as IEM suite.
 
-Each package file is expected to begin with a metadata header.
-See [Packaging Documentation](https://github.com/cfillion/reapack-index/wiki/Packaging-Documentation) on reapack-index's wiki.
+## X/Y PAd
 
-The URL to import in ReaPack is [https://github.com/`<your username>`/`<repository name>`/raw/master/index.xml](https://github.com/cfillion/reapack-repository-template/raw/master/index.xml).
+Control stuff with a x/y pad - the idea is that you map your fx or synth params to either of the three sliders, and then control those by using x/y pad. 
+
+The utility also outputs an audio signal with the level, if you want to get experimental. I recommend disconnecting all it's outputs from the chain otherwise.
+
+## Installation
+* Using reapack: Add to ReaPack by importing https://github.com/autotel/jsfx/raw/master/index.xml
+* Without reapack: 
+    * Locate the JSFX folder on your reaper isntallation (one way to do this is to edit a js text file, 'save as' and instead of saving, copy the url where the current text file is located)
+    * Download the text files and locate them on the correct folders.
+* Alternatively, you could try using the https://github.com/JoepVanlier/ysfx jsfx host
